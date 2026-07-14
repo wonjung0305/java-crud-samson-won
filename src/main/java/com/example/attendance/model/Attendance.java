@@ -3,7 +3,6 @@ package com.example.attendance.model;
 public class Attendance {
     private Long id;   // pk
     private String studentId;   // 학번
-    private String name;   // 이름
     private int week;   // 주차
     private int workoutCount;   // 오운완 인증 횟수
     private boolean attendance;   // 정모 참석 여부
@@ -15,14 +14,18 @@ public class Attendance {
     }
 
     // 매개변수 생성자 (데이터 주입)
-    public Attendance(Long id, String studentId, String name, int week, int workoutCount, boolean attendance, int fine) {
+    public Attendance(Long id, String studentId, int week, int workoutCount, boolean attendance) {
         this.id = id;
         this.studentId = studentId;
-        this.name = name;
         this.week = week;
         this.workoutCount = workoutCount;
         this.attendance = attendance;
         this.fine = 0;
+    }
+
+    // 횟수 증가용
+    public void incrementWorkoutcount(){
+        this.workoutCount++;
     }
 
     // Getter, Setter
@@ -39,13 +42,6 @@ public class Attendance {
     }
     public void setStudentId(String studentId) {
         this.studentId = studentId;
-    }
-
-    public String getName() {
-        return name;
-    }
-    public void setName(String name) {
-        this.name = name;
     }
 
     public int getWeek() {

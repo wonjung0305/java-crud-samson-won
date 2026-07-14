@@ -1,0 +1,61 @@
+package com.example.attendance.model;
+
+public class Member {
+    // 이름, 전화번호, 학번 (프로필 관리)
+    private String studentId;   // 학번(pk)
+    private String name;   // 이름
+    private String phoneNumber;   // 전화번호
+    private String department;   // 학부
+    private int activeSemester;   // 활동 학기 수
+
+    // 기본 생성자
+    public Member(){}
+
+    public Member(String studentId, String name, String phoneNumber, String department, int activeSemester) {
+        this.studentId = studentId;
+        this.name = name;
+        this.phoneNumber = phoneNumber;
+        this.department = department;
+        this.activeSemester = activeSemester;
+    }
+
+    // YB/OB 등록
+    public boolean isOb(){
+        return this.activeSemester > 3;
+    }
+
+    public String getStudentId() {
+        return studentId;
+    }
+    public void setStudentId(String studentId) {
+        this.studentId = studentId;
+    }
+
+    public String getName() {
+        return name;
+    }
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getPhoneNumber() {
+        return phoneNumber;
+    }
+    public void setPhoneNumber(String phoneNumber) {
+        this.phoneNumber = phoneNumber;
+    }
+
+    public String getDepartment() {
+        return department;
+    }
+    public void setDepartment(String department) {
+        this.department = department;
+    }
+
+    public int getActiveSemester() {
+        return activeSemester;
+    }
+    public void setActiveSemester(int activeSemester) {
+        this.activeSemester = activeSemester;
+    }
+}
