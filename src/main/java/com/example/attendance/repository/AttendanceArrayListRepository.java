@@ -22,10 +22,10 @@ public class AttendanceArrayListRepository implements AttendanceRepository {
     }
 
     @Override
-    public Optional<Attendance> findByStudentIdAndWeek(String studentId, int week){
+    public Optional<Attendance> findByStudentIdAndWeek(String studentId, String semester, int week){
         for(Attendance a : store){
             // 찾았을 때
-            if((a.getStudentId().equals(studentId)) && (a.getWeek() == week)){
+            if((a.getStudentId().equals(studentId)) && (a.getSemester().equals(semester)) && (a.getWeek() == week)){
                 return Optional.of(a);
             }
         }
@@ -39,10 +39,11 @@ public class AttendanceArrayListRepository implements AttendanceRepository {
     }
 
     @Override
-    public List<Attendance> findByStudentId(String studentId) {
+    public List<Attendance> findByStudentIdAndSemester(String studentId, String semester) {
         List<Attendance> result = new ArrayList<>();
+
         for (Attendance a : store){
-            if(a.getStudentId().equals(studentId)){
+            if(a.getStudentId().equals(studentId) && a.getSemester().equals(semester)){
                 result.add(a);
             }
         }
@@ -50,10 +51,11 @@ public class AttendanceArrayListRepository implements AttendanceRepository {
     }
 
     @Override
-    public List<Attendance> findByWeek(int week) {
+    public List<Attendance> findByWeek(String semester, int week) {
         List<Attendance> result = new ArrayList<>();
+
         for (Attendance a : store){
-            if(a.getWeek() == week){
+            if(a.getSemester().equals(semester) && a.getWeek() == week){
                 result.add(a);
             }
         }

@@ -1,5 +1,6 @@
 package com.example.attendance.model;
 
+// 동아리원에 대한 정보
 public class Member {
     // 이름, 전화번호, 학번 (프로필 관리)
     private String studentId;   // 학번(pk)
@@ -7,6 +8,7 @@ public class Member {
     private String phoneNumber;   // 전화번호
     private String department;   // 학부
     private int activeSemester;   // 활동 학기 수
+    private String status; // 활동, 휴학
 
     // 기본 생성자
     public Member(){}
@@ -17,6 +19,7 @@ public class Member {
         this.phoneNumber = phoneNumber;
         this.department = department;
         this.activeSemester = activeSemester;
+        this.status = "활동";
     }
 
     // YB/OB 등록
@@ -57,5 +60,12 @@ public class Member {
     }
     public void setActiveSemester(int activeSemester) {
         this.activeSemester = activeSemester;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+    public void setStatus(String status) {
+        this.status = status;
     }
 }

@@ -7,8 +7,12 @@ import java.util.Optional;
 
 public interface MemberRepository {
     void save(Member member);   // 부원 등록
-    Optional<Member> findByStudentId(String studentId);   // 잘못된 검색 대비 Optional(null로 반환됨)
+
+    Optional<Member> findByStudentId(String studentId);
     Optional<Member> findByName(String name);
+
     List<Member> findAll();
+
+    void update(Member member);   // 부원 정보 수정
     void deleteByStudentId(String studentId);
 }

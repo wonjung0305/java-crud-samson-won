@@ -5,6 +5,7 @@ import com.example.attendance.model.Member;
 import com.example.attendance.repository.AttendanceRepository;
 import com.example.attendance.repository.MemberRepository;
 
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
@@ -13,10 +14,17 @@ public class AttendanceService {
     private final AttendanceRepository attendanceRepository;
     private final MemberRepository memberRepository;
 
+    private String currentSemester;   // 현재 진행 중인 학기 (기본 == 2026-1)
+
     // 생성자 정의
-    public AttendanceService(AttendanceRepository attendanceRepository, MemberRepository memberRepository) {
+    public AttendanceService(AttendanceRepository attendanceRepository, MemberRepository memberRepository, String initialSemester) {
         this.attendanceRepository = attendanceRepository;
         this.memberRepository = memberRepository;
+        this.currentSemester = initialSemester;
+    }
+
+    public String getCurrentSemester() {
+        return currentSemester;
     }
 
     // 1. 부원 등록
@@ -44,6 +52,38 @@ public class AttendanceService {
         memberRepository.deleteByStudentId(studentId);
     }
 
+
+    // 6. 이번 학기 활동 인원만 조회
+    public List<Member> getActiveMembers() {
+        List<Member> result = new ArrayList<>();
+
+        for (Member m : memberRepository.findAll()) {
+            if (m.getStatus().equals("활동")) {
+                result.add(m);
+            }
+        }
+
+        return result;
+    }
+
+    // 7. 학기 마감 및 다음 학기로 전환
+        //    - leavingStudentIds: 다음 학기에 계속하지 않는 인원의 학번 목록 -> 휴학 처리
+        //    - 나머지 활동 인원 자동으로 다음 학기도 활동 상태 유지
+    public void closeSemester(List<String> leavingStudentIds, String nextSemester) {
+        for (String studentId : leavingStudentIds) {
+
+            // 휴학하는 학생의 학번 들고 와서
+            Optional<Member> memberOpt = memberRepository.findByStudentId(studentId);
+
+            if (memberOpt.isPresent()) {
+                Member member = memberOpt.get();   // 객체 가져오고
+                member.setStatus("휴학");   // 휴학으로 변경
+                memberRepository.update(member);   // 업데이트
+            }
+        }
+        this.currentSemester = nextSemester;
+    }
+
 // --------------------------------------------------
 
     // 이름 입력 -> 오운완 인증
@@ -56,16 +96,16 @@ public class AttendanceService {
         }
 
         String studentId = memberOpt.get().getStudentId();
-        Optional<Attendance> attendanceOpt = attendanceRepository.findByStudentIdAndWeek(studentId, week);   // 주차 출석 기록이 있는지
+        Optional<Attendance> attendanceOpt = attendanceRepository.findByStudentIdAndWeek(studentId, currentSemester, week);   // 주차 출석 기록이 있는지
 
         Attendance attendance;
 
         if(attendanceOpt.isPresent()){   // 이미 기록이 있다면, +1
             attendance = attendanceOpt.get();
-            attendance.incrementWorkoutcount();   // +1
+            attendance.incrementWorkoutCount();   // +1
             attendanceRepository.update(attendance);   // 수정
         } else{   // 해당 주차 기록이 없는 경우
-            attendance = new Attendance(null, studentId, week, 1, false);
+            attendance = new Attendance(null, studentId, currentSemester, week, 1, false);
             attendanceRepository.save(attendance);
         }
 
@@ -83,7 +123,7 @@ public class AttendanceService {
         }
 
         String studentId = memberOpt.get().getStudentId();
-        Optional<Attendance> attendanceOpt = attendanceRepository.findByStudentIdAndWeek(studentId, week);
+        Optional<Attendance> attendanceOpt = attendanceRepository.findByStudentIdAndWeek(studentId, currentSemester, week);
 
         Attendance attendance;
         if(attendanceOpt.isPresent()){
@@ -92,8 +132,8 @@ public class AttendanceService {
             attendanceRepository.update(attendance);   // 기록 수정
         } else{
             // 오운완 기록 X, 일단 정모만 참여한 경우
-            attendance = new Attendance(null, studentId, week, 0, true);
-            attendanceRepository.save(attendance);   // 기록 생성
+            attendance = new Attendance(null, studentId, currentSemester, week, 0, true);
+            attendanceRepository.save(attendance);   // 기록 생성, pk 증가
         }
 
         calculateFine(studentId, attendance, week);
@@ -101,14 +141,59 @@ public class AttendanceService {
 
     }
 
+    // 이름 입력 -> 잘못 입력한 활동 기록 삭제
+    public boolean deleteAttendanceRecord(String name, int week) {
+        Optional<Member> memberOpt = memberRepository.findByName(name);
+
+        // 존재하지 않는 경우
+        if (memberOpt.isEmpty()) {
+            return false;
+        }
+
+        String studentId = memberOpt.get().getStudentId();
+        Optional<Attendance> attendanceOpt = attendanceRepository.findByStudentIdAndWeek(studentId, currentSemester, week);
+        if (attendanceOpt.isEmpty()) {
+            return false;
+        }
+
+        attendanceRepository.delete(attendanceOpt.get().getId());
+        return true;
+    }
+
+    // 부원 상태 변경 (휴학 또는 복학)
+    public boolean updateMemberStatus(String studentId, String newStatus) {
+        Optional<Member> memberOpt = memberRepository.findByStudentId(studentId);
+
+        if (memberOpt.isPresent()) {
+            Member member = memberOpt.get();
+
+            // 휴학 or 활동 상태로 변경
+            member.setStatus(newStatus);
+
+            // 복학하는 경우, +1
+            if (newStatus.equals("활동")) {
+                member.setActiveSemester(member.getActiveSemester() + 1);
+            }
+
+            memberRepository.update(member);   // 변경 사항 저장소에 반영
+            return true;
+        }
+        return false; // 부원을 찾지 못한 경우
+    }
+
+// --------------------------------------------------
+    public AttendanceRepository getAttendanceRepository() {
+        return this.attendanceRepository;
+    }
+
 // --------------------------------------------------
     // 1. 벌금 계산 로직
         // 정모 불참: 2회 면제, 3회째 부터 5,000원 및 등비수열로 증가
-        // 오운완 미달(주 3회 미만): 2주 면제, 3주째부터 5,000원 및 등비수열로 증가
+        // 오운완 미달(주 3회 미만): 2주 면제, 3주째부터 5,000원 및 등비수열
 
     private void calculateFine(String studentId, Attendance current, int currentWeek){
-        // 기록 가져오기
-        List<Attendance> history = attendanceRepository.findByStudentId(studentId);
+        // 기록 가져오기 (이번 학기 기록만)
+        List<Attendance> history = attendanceRepository.findByStudentIdAndSemester(studentId, current.getSemester());
 
         int pastAbsence = 0;   // 지난 결석
         int pastWorkoutFail = 0;   // 지난 오운완 미인증
@@ -177,7 +262,7 @@ public class AttendanceService {
 
     // 엑셀 출력용 정렬로직
     public List<Attendance> getSortedAttendance(int week){
-        List<Attendance> records = attendanceRepository.findByWeek(week);
+        List<Attendance> records = attendanceRepository.findByWeek(currentSemester, week);
 
         records.sort(new Comparator<Attendance>() {
             @Override

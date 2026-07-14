@@ -2,7 +2,6 @@ package com.example.attendance.repository;
 
 import com.example.attendance.model.Member;
 
-import javax.swing.text.html.Option;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -39,6 +38,15 @@ public class MemberArrayListRepository implements MemberRepository {
     @Override
     public List<Member> findAll() {
         return new ArrayList<>(store);
+    }
+
+    @Override
+    public void update(Member member) {
+        for (int i = 0; i < store.size(); i++) {
+            if (store.get(i).getStudentId().equals(member.getStudentId())) {
+                store.set(i, member);
+            }
+        }
     }
 
     @Override

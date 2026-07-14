@@ -1,8 +1,10 @@
 package com.example.attendance.model;
 
+// 특정 주차에 대한 정보
 public class Attendance {
     private Long id;   // pk
     private String studentId;   // 학번
+    private String semester;   // 학기 (예: "2026-1")
     private int week;   // 주차
     private int workoutCount;   // 오운완 인증 횟수
     private boolean attendance;   // 정모 참석 여부
@@ -14,9 +16,10 @@ public class Attendance {
     }
 
     // 매개변수 생성자 (데이터 주입)
-    public Attendance(Long id, String studentId, int week, int workoutCount, boolean attendance) {
+    public Attendance(Long id, String studentId, String semester, int week, int workoutCount, boolean attendance) {
         this.id = id;
         this.studentId = studentId;
+        this.semester = semester;
         this.week = week;
         this.workoutCount = workoutCount;
         this.attendance = attendance;
@@ -24,7 +27,7 @@ public class Attendance {
     }
 
     // 횟수 증가용
-    public void incrementWorkoutcount(){
+    public void incrementWorkoutCount(){
         this.workoutCount++;
     }
 
@@ -42,6 +45,13 @@ public class Attendance {
     }
     public void setStudentId(String studentId) {
         this.studentId = studentId;
+    }
+
+    public String getSemester() {
+        return semester;
+    }
+    public void setSemester(String semester) {
+        this.semester = semester;
     }
 
     public int getWeek() {
