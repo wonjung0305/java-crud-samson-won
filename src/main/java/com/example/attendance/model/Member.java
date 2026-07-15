@@ -68,4 +68,9 @@ public class Member {
     public void setStatus(String status) {
         this.status = status;
     }
+
+    // CSV 한 줄로 변환
+    public String toCsvString() {
+        return String.join(",", studentId, name, phoneNumber, department, status, String.valueOf(activeSemester));
+    }
 }

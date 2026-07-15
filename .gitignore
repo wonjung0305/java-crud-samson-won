@@ -40,3 +40,11 @@ build/
 
 ## db.properties
 src/main/resources/db.properties
+
+## 실행 시 생성되는 CSV 데이터 파일
+/members.csv
+/attendance.csv
+/semester.txt
+
+## 엑셀 내보내기 결과물
+*.xlsx

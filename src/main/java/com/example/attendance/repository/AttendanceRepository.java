@@ -20,4 +20,7 @@ public interface AttendanceRepository {
 
     void update(Attendance attendance);
     void delete(Long id);   // 기록 삭제
+
+    // 프로그램 종료 시 저장소를 최종 flush하는 훅 (파일/DB 버전에서만 의미 있음)
+    default void saveAll() {}
 }

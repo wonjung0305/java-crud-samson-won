@@ -5,6 +5,7 @@ import com.example.attendance.model.Member;
 import com.example.attendance.repository.AttendanceRepository;
 import com.example.attendance.repository.MemberRepository;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -27,9 +28,22 @@ public class AttendanceService {
         return currentSemester;
     }
 
+    // 프로그램 종료 시, 최종 저장
+    public void saveAll() {
+        memberRepository.saveAll();
+        attendanceRepository.saveAll();
+    }
+
     // 1. 부원 등록
-    public void registerMember(Member member) {
+    public boolean registerMember(Member member) {
+
+        // 학번 중복 제외
+        if (memberRepository.findByStudentId(member.getStudentId()).isPresent()) {
+            return false;
+        }
+
         memberRepository.save(member);
+        return true;
     }
 
     // 2. 부원 전체 명단 조회
@@ -50,6 +64,22 @@ public class AttendanceService {
     // 5. 부원 제명
     public void removeMember(String studentId) {
         memberRepository.deleteByStudentId(studentId);
+    }
+
+    // 부원 정보 수정 (이름/전화번호/학부) - 학번은 PK라 여기서는 안 바꿈
+    public boolean updateMemberInfo(String studentId, String name, String phoneNumber, String department) {
+        Optional<Member> memberOpt = memberRepository.findByStudentId(studentId);
+        if (memberOpt.isEmpty()) {
+            return false;
+        }
+
+        Member member = memberOpt.get();
+        member.setName(name);
+        member.setPhoneNumber(phoneNumber);
+        member.setDepartment(department);
+
+        memberRepository.update(member);
+        return true;
     }
 
 
@@ -102,10 +132,11 @@ public class AttendanceService {
 
         if(attendanceOpt.isPresent()){   // 이미 기록이 있다면, +1
             attendance = attendanceOpt.get();
-            attendance.incrementWorkoutCount();   // +1
+            attendance.recordWorkout(LocalDate.now());   // 횟수 +1, 인증 날짜 기록
             attendanceRepository.update(attendance);   // 수정
         } else{   // 해당 주차 기록이 없는 경우
-            attendance = new Attendance(null, studentId, currentSemester, week, 1, false);
+            attendance = new Attendance(null, studentId, currentSemester, week, 0, false);
+            attendance.recordWorkout(LocalDate.now());   // 횟수 1로, 인증 날짜 기록
             attendanceRepository.save(attendance);
         }
 
@@ -186,6 +217,11 @@ public class AttendanceService {
         return this.attendanceRepository;
     }
 
+    // 학번 + 학기로 활동 이력 조회 (과거 학기 조회용)
+    public List<Attendance> getAttendanceHistory(String studentId, String semester) {
+        return attendanceRepository.findByStudentIdAndSemester(studentId, semester);
+    }
+
 // --------------------------------------------------
     // 1. 벌금 계산 로직
         // 정모 불참: 2회 면제, 3회째 부터 5,000원 및 등비수열로 증가
@@ -198,26 +234,33 @@ public class AttendanceService {
         int pastAbsence = 0;   // 지난 결석
         int pastWorkoutFail = 0;   // 지난 오운완 미인증
 
-        // 모든 기록에서 하나씩 차례대로 반복
-        for(Attendance h: history){
+        // 1주차부터 현재 주차 전까지 전부 확인 (기록이 아예 없는 주차는 결석/미인증으로 처리)
+        for (int week = 1; week < current.getWeek(); week++) {
 
-            if (h.getWeek() < current.getWeek()){
+            // 8주차, 16주차 제외(시험 및 종강 주차)
+            if (week == 8 || week == 16) continue;
 
-                // 8주차, 16주차 제외(시험 및 종강 주차)
-                if ((h.getWeek() != 8) && (h.getWeek() != 16)){
-
-                    // 정모 참여X -> 결석 횟수++
-                    if (!h.isAttendance()){
-                        pastAbsence++;
-                    }
-
-                    // 오운완 3회 미인증 -> 해당 주차 실패++
-                    int includeMeetingCount = h.getWorkoutCount() + (h.isAttendance() ? 1:0);
-                    if(includeMeetingCount < 3){
-                        pastWorkoutFail++;
-                    }
-
+            // 해당 주차 기록 찾기 (없으면 null -> 아무것도 안 한 것으로 간주)
+            Attendance h = null;
+            for (Attendance a : history) {
+                if (a.getWeek() == week) {
+                    h = a;
+                    break;
                 }
+            }
+
+            boolean attended = (h != null) && h.isAttendance();
+            int workoutCount = (h != null) ? h.getWorkoutCount() : 0;
+
+            // 정모 참여X -> 결석 횟수++
+            if (!attended) {
+                pastAbsence++;
+            }
+
+            // 오운완 3회 미인증 -> 해당 주차 실패++
+            int includeMeetingCount = workoutCount + (attended ? 1 : 0);
+            if (includeMeetingCount < 3) {
+                pastWorkoutFail++;
             }
         }
 
@@ -260,9 +303,23 @@ public class AttendanceService {
 
     }
 
-    // 엑셀 출력용 정렬로직
-    public List<Attendance> getSortedAttendance(int week){
-        List<Attendance> records = attendanceRepository.findByWeek(currentSemester, week);
+    // 엑셀 출력용 정렬로직 (학기 지정, 과거 학기 조회용)
+    public List<Attendance> getSortedAttendance(String semester, int week){
+        List<Attendance> records = attendanceRepository.findByWeek(semester, week);
+
+        // 활동 인원인데 이번 주 기록이 아예 없는 사람도 0회/불참으로 채워서 포함
+        for (Member m : getActiveMembers()) {
+            boolean hasRecord = false;
+            for (Attendance a : records) {
+                if (a.getStudentId().equals(m.getStudentId())) {
+                    hasRecord = true;
+                    break;
+                }
+            }
+            if (!hasRecord) {
+                records.add(new Attendance(null, m.getStudentId(), semester, week, 0, false));
+            }
+        }
 
         records.sort(new Comparator<Attendance>() {
             @Override

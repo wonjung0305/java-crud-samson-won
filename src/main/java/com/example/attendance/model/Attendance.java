@@ -1,5 +1,10 @@
 package com.example.attendance.model;
 
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+
 // 특정 주차에 대한 정보
 public class Attendance {
     private Long id;   // pk
@@ -9,6 +14,7 @@ public class Attendance {
     private int workoutCount;   // 오운완 인증 횟수
     private boolean attendance;   // 정모 참석 여부
     private int fine;   // 벌금
+    private List<LocalDate> workoutDates = new ArrayList<>();   // 오운완 인증한 날짜들
 
     // 기본 생성자
     public Attendance(){
@@ -26,9 +32,10 @@ public class Attendance {
         this.fine = 0;
     }
 
-    // 횟수 증가용
-    public void incrementWorkoutCount(){
+    // 오운완 인증 1회 기록 (횟수 증가 + 날짜 기록)
+    public void recordWorkout(LocalDate date){
         this.workoutCount++;
+        this.workoutDates.add(date);
     }
 
     // Getter, Setter
@@ -80,5 +87,19 @@ public class Attendance {
     }
     public void setFine(int fine) {
         this.fine = fine;
+    }
+
+    public List<LocalDate> getWorkoutDates() {
+        return workoutDates;
+    }
+    public void setWorkoutDates(List<LocalDate> workoutDates) {
+        this.workoutDates = workoutDates;
+    }
+
+    // CSV 한 줄로 변환
+    public String toCsvString() {
+        String datesJoined = workoutDates.stream().map(LocalDate::toString).collect(Collectors.joining("|"));
+
+        return String.join(",", String.valueOf(id), studentId, semester, String.valueOf(week), String.valueOf(workoutCount), String.valueOf(attendance), String.valueOf(fine), datesJoined);
     }
 }
