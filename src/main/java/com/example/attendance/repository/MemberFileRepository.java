@@ -38,7 +38,7 @@ public class MemberFileRepository implements MemberRepository {
 
                 // 순서: studentId, name, phoneNumber, department, status, activeSemester
                 Member member = new Member(data[0], data[1], data[2], data[3], Integer.parseInt(data[5]));
-                member.setStatus(data[4]);   // 실제 값으로 덮어쓰기
+                member.setStatus(data[4]);   // 실제 값으로 덮어쓰기 (기본 == 활동)
                 store.add(member);
             }
         } catch (IOException e) {
@@ -46,7 +46,7 @@ public class MemberFileRepository implements MemberRepository {
         }
     }
 
-    // 현재 메모리에 있는 리스트를 파일에 통째로 덮어쓰는 로직
+    // 현재 메모리에(store) 있는 리스트를 파일에 통째로 덮어쓰는 로직
     private void saveToFile() {
         try (BufferedWriter bw = new BufferedWriter(new FileWriter(FILE_PATH))) {
             for (Member m : store) {
@@ -58,12 +58,14 @@ public class MemberFileRepository implements MemberRepository {
         }
     }
 
+    // 부원 등록
     @Override
     public void save(Member member) {
-        store.add(member);
-        saveToFile();
+        store.add(member); // store에 더하고
+        saveToFile();   // 파일에 저장
     }
 
+    // 학번 -> 부원 정보
     @Override
     public Optional<Member> findByStudentId(String studentId) {
         for (Member m : store) {
@@ -74,6 +76,7 @@ public class MemberFileRepository implements MemberRepository {
         return Optional.empty();
     }
 
+    // 이름 -> 부원 정보
     @Override
     public Optional<Member> findByName(String name) {
         for (Member m : store) {
@@ -84,11 +87,13 @@ public class MemberFileRepository implements MemberRepository {
         return Optional.empty();
     }
 
+    // 전체 부원 정보
     @Override
     public List<Member> findAll() {
         return new ArrayList<>(store);
     }
 
+    // 부원 정보 수정(파일에 업데이트)
     @Override
     public void update(Member member) {
         for (int i = 0; i < store.size(); i++) {
@@ -99,12 +104,14 @@ public class MemberFileRepository implements MemberRepository {
         saveToFile();
     }
 
+    // 학번 -> 부원 정보 삭제(파일에 업데이트)
     @Override
     public void deleteByStudentId(String studentId) {
         store.removeIf(member -> member.getStudentId().equals(studentId));
         saveToFile();
     }
 
+    // 전체 저장 (프로그램 종료 시 사용)
     @Override
     public void saveAll() {
         saveToFile();

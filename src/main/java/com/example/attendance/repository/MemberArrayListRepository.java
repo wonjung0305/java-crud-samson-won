@@ -15,6 +15,7 @@ public class MemberArrayListRepository implements MemberRepository {
         store.add(member);
     }
 
+    // 학번 -> 정보 검색
     @Override
     public Optional<Member> findByStudentId(String studentId) {
         for(Member m : store){
@@ -25,6 +26,7 @@ public class MemberArrayListRepository implements MemberRepository {
         return Optional.empty();
     }
 
+    // 이름 -> 정보 검색
     @Override
     public Optional<Member> findByName(String name) {
         for(Member m : store){
@@ -35,11 +37,13 @@ public class MemberArrayListRepository implements MemberRepository {
         return Optional.empty();
     }
 
+    // 전체 학생 정보 반환
     @Override
     public List<Member> findAll() {
         return new ArrayList<>(store);
     }
 
+    // 학생 정보 수정
     @Override
     public void update(Member member) {
         for (int i = 0; i < store.size(); i++) {
@@ -49,6 +53,7 @@ public class MemberArrayListRepository implements MemberRepository {
         }
     }
 
+    // 학번으로 정보 삭제
     @Override
     public void deleteByStudentId(String studentId) {
         store.removeIf(member -> member.getStudentId().equals(studentId));
