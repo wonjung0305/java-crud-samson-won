@@ -1,0 +1,17 @@
+services:
+  mariadb:
+    image: mariadb:latest   # 최신 버전
+    container_name: java-crud-mariadb   # 컨테이너 이름 설정
+    restart: always   # 자동으로 데이터베이스 재실행되도록
+    environment:   # 핵심 환경 변수
+      MYSQL_ROOT_PASSWORD: root   # 계정비밀번호
+      MYSQL_DATABASE: attendance_db   # 데이터베이스 공간에 생성
+      MYSQL_USER: club_samson   # 계정
+      MYSQL_PASSWORD: club_samson123   # 계정 비밀 번호
+    ports:   # 내 컴퓨터: MariaDB 포트번호
+      - "3306:3306"
+    volumes:   # 내 컴퓨터 하드디스크 공간에 백업
+      - mariadb_data:/var/lib/mysql
+
+volumes:
+  mariadb_data:

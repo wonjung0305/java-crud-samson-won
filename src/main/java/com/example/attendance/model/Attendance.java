@@ -5,11 +5,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-// 특정 주차에 대한 정보
+/**
+ * 특정 학기/주차의 학생 출석, 오운완, 벌금 기록을 관리하는 클래스
+ */
 public class Attendance {
     private Long id;   // pk
     private String studentId;   // 학번
-    private String semester;   // 학기 (예: "2026-1")
+    private String semester;   // 학기 (기본 "2026-1")
     private int week;   // 주차
     private int workoutCount;   // 오운완 인증 횟수
     private boolean attendance;   // 정모 참석 여부
@@ -18,10 +20,9 @@ public class Attendance {
 
     // 기본 생성자
     public Attendance(){
-
     }
 
-    // 매개변수 생성자 (데이터 주입)
+    // 매개변수 생성자
     public Attendance(Long id, String studentId, String semester, int week, int workoutCount, boolean attendance) {
         this.id = id;
         this.studentId = studentId;
@@ -39,7 +40,6 @@ public class Attendance {
     }
 
     // Getter, Setter
-
     public Long getId() {
         return id;
     }
@@ -98,8 +98,10 @@ public class Attendance {
 
     // CSV 한 줄로 변환
     public String toCsvString() {
+        // 날짜들을 |을 기준으로 묶음
         String datesJoined = workoutDates.stream().map(LocalDate::toString).collect(Collectors.joining("|"));
 
+        // id, 학번, 학기, 주차, 오운완 횟수, 정모 참석 여부, 벌금, 오운완 날짜
         return String.join(",", String.valueOf(id), studentId, semester, String.valueOf(week), String.valueOf(workoutCount), String.valueOf(attendance), String.valueOf(fine), datesJoined);
     }
 }

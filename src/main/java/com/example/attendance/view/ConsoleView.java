@@ -389,43 +389,15 @@ public class ConsoleView {
             return;
         }
 
-        if (memberOpt.isPresent()) {
-            Member m = memberOpt.get();
-            String gubun = m.isOb() ? "OB" : "YB";
-            System.out.printf("[검색 결과] 학번: %s | 이름: %s | 연락처: %s | 학부: %s | 상태: %s | 구분: %s\n", m.getStudentId(), m.getName(), m.getPhoneNumber(), m.getDepartment(), m.getStatus(), gubun);
+        Member m = memberOpt.get();
+        String gubun = m.isOb() ? "OB" : "YB";
+        System.out.printf("[검색 결과] 학번: %s | 이름: %s | 연락처: %s | 학부: %s | 상태: %s | 구분: %s\n", m.getStudentId(), m.getName(), m.getPhoneNumber(), m.getDepartment(), m.getStatus(), gubun);
 
-            String semester = readSemesterOrDefault();
-            List<Attendance> history = service.getAttendanceHistory(m.getStudentId(), semester);
+        String semester = readSemesterOrDefault();
+        AttendanceService.SemesterStats stats = service.getSemesterStats(m.getStudentId(), semester);
 
-            int workoutFailCount = 0;   // 오운완 미달 주차 수
-            int absenceCount = 0;   // 정모 결석 횟수
-            int totalFine = 0;   // 이번 학기 누적 벌금
-
-            for(Attendance a : history){
-                if((a.getWeek() != 8) && (a.getWeek() != 16)){
-                    // 정모 불참 체크
-                    if(!a.isAttendance()){
-                        absenceCount++;
-                    }
-
-                    // 오운완 미달
-                    int includeMeetingCount = a.getWorkoutCount() + (a.isAttendance() ? 1 : 0);
-                    if (includeMeetingCount < 3) {
-                        workoutFailCount++;
-                    }
-                }
-
-                // 주차별 벌금 누적
-                totalFine += a.getFine();
-
-            }
-
-            // 활동 통계 출력
-            System.out.printf("[활동 통계 - %s] 정모 결석: %d회 | 오운완 미달 주차: %d주 | 누적 벌금: %,d원\n", semester, absenceCount, workoutFailCount, totalFine);
-
-        } else {
-            System.out.println("검색 결과가 없습니다.");
-        }
+        // 활동 통계 출력
+        System.out.printf("[활동 통계 - %s] 정모 결석: %d회 | 오운완 미달 주차: %d주 | 누적 벌금: %,d원\n", semester, stats.absenceCount(), stats.workoutFailCount(), stats.totalFine());
     }
 
     // 12번. 주차별 조회
@@ -434,7 +406,7 @@ public class ConsoleView {
 
         System.out.print("조회할 주차 입력(1-16): ");
         int week = readWeek();
-        List<com.example.attendance.model.Attendance> sorted = service.getSortedAttendance(semester, week);
+        List<Attendance> sorted = service.getSortedAttendance(semester, week);
 
         if (sorted.isEmpty()) {
             System.out.println("[" + semester + "] " + week + "주차에 등록된 활동 데이터가 없습니다.");
@@ -443,7 +415,7 @@ public class ConsoleView {
 
         System.out.println("\n--- [" + semester + " / " + week + "주차] 종합 정렬 명단 ---");
         for (int i = 0; i < sorted.size(); i++) {
-            com.example.attendance.model.Attendance a = sorted.get(i);
+            Attendance a = sorted.get(i);
 
             // map(Member::getName) >> 회원이 있으면 getName 으로 들고오기
                 // 회원이 없는 경우 "알 수 없음" 처리 -> 제명됐거나 잘못된 데이터

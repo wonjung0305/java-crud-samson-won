@@ -6,8 +6,11 @@ import com.example.attendance.repository.MemberRepository;
 // import com.example.attendance.repository.AttendanceArrayListRepository;
 // import com.example.attendance.repository.MemberArrayListRepository;
 
-import com.example.attendance.repository.AttendanceFileRepository;
-import com.example.attendance.repository.MemberFileRepository;
+// import com.example.attendance.repository.AttendanceFileRepository;
+// import com.example.attendance.repository.MemberFileRepository;
+
+import com.example.attendance.repository.AttendanceDbRepository;
+import com.example.attendance.repository.MemberDbRepository;
 import com.example.attendance.service.AttendanceService;
 import com.example.attendance.view.ConsoleView;
 
@@ -24,10 +27,12 @@ public class Main {
 
     public static void main(String[] args){
         // MemberRepository memberRepository = new MemberArrayListRepository();   // 메모리 버전
-        MemberRepository memberRepository = new MemberFileRepository();           // 파일 버전
+        // MemberRepository memberRepository = new MemberFileRepository();       // 파일 버전
+        MemberRepository memberRepository = new MemberDbRepository();            // DB 버전
 
         // AttendanceRepository attendanceRepository = new AttendanceArrayListRepository();   // 메모리 버전
-        AttendanceRepository attendanceRepository = new AttendanceFileRepository();           // 파일 버전
+        // AttendanceRepository attendanceRepository = new AttendanceFileRepository();        // 파일 버전
+        AttendanceRepository attendanceRepository = new AttendanceDbRepository();            // DB 버전
 
         String initialSemester = loadCurrentSemester();   // 마지막으로 쓰던 학기 이어받기
         AttendanceService service = new AttendanceService(attendanceRepository, memberRepository, initialSemester);
@@ -38,12 +43,14 @@ public class Main {
         saveCurrentSemester(service.getCurrentSemester());   // 종료 시점의 학기 저장
     }
 
-    // semester.txt에서 마지막 학기 읽어오기 (파일 없으면 기본값)
+    // 마지막 학기 읽어오기
     private static String loadCurrentSemester() {
         File file = new File(SEMESTER_FILE);
 
+        // 텍스트 파일에 학기 안써져있으면, 기본으로
         if (!file.exists()) return DEFAULT_SEMESTER;
 
+        // 파일 읽어서 있으면 해당 학기 반환
         try (BufferedReader br = new BufferedReader(new FileReader(file))) {
             String line = br.readLine();
             return (line == null || line.trim().isEmpty()) ? DEFAULT_SEMESTER : line.trim();

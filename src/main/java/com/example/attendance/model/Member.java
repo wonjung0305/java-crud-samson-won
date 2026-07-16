@@ -1,6 +1,8 @@
 package com.example.attendance.model;
 
-// 동아리원에 대한 정보
+/**
+ * 동아리원 정보를 관리하는 클래스
+ */
 public class Member {
     // 이름, 전화번호, 학번 (프로필 관리)
     private String studentId;   // 학번(pk)
@@ -13,6 +15,7 @@ public class Member {
     // 기본 생성자
     public Member(){}
 
+    // 매개변수 생성자
     public Member(String studentId, String name, String phoneNumber, String department, int activeSemester) {
         this.studentId = studentId;
         this.name = name;
