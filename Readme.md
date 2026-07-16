@@ -41,6 +41,7 @@ IDE | IntelliJ
 
 ## 4. 프로젝트 구조
 java-crud-samson-won/  
+docs/images/
 src/java/com/example/attendance  
 &ensp;&ensp;&ensp;&ensp;model/  
 &ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;&ensp;Attendance  
@@ -88,20 +89,26 @@ docker exec -it java-crud-mariadb mariadb -u club_user -p attendance_db #프롬�
 - workout_dates: 오운완 인증 날짜(attendance 1건 당 여러 날짜 가능,attendance_id FK + CASCADE)  
 
 ## 8. 주요 기능 실행 예시
-1. 메뉴
-![img_2.png](img_2.png)
-2. 부원 등록
-![img_3.png](img_3.png)
-3. 전체 명단 조회
-![img_4.png](img_4.png)
-4. 오운완 등록
-![img_5.png](img_5.png)
-5. 정모 참여 등록
-![img_6.png](img_6.png)
-6. 주차별 조회
-![img_7.png](img_7.png)
-7. 엑셀 내보내기
-![img_8.png](img_8.png)
+1. 메뉴  
+<img src="docs/images/2.png" width="500" alt="메뉴 화면">
+
+2. 부원 등록  
+<img src="docs/images/3.png" width="500" alt="부원 등록">
+
+3. 전체 명단 조회  
+<img src="docs/images/4.png" width="600" alt="전체 명단 조회">
+
+4. 오운완 등록  
+<img src="docs/images/5.png" width="500" alt="오운완 등록">
+
+5. 정모 참여 등록  
+<img src="docs/images/6.png" width="500" alt="정모 참여 등록">
+
+6. 주차별 조회  
+<img src="docs/images/7.png" width="600" alt="주차별 조회">
+
+7. 엑셀 내보내기  
+<img src="docs/images/8.png" width="600" alt="엑셀 내보내기">
 
 ## 9. Git Branch 전략
 main: 최종 제출 브랜치  
