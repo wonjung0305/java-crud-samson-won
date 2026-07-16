@@ -373,8 +373,11 @@ public class AttendanceService {
                     break;
                 }
             }
-            if (!hasRecord) {   // 근데 없는 사람은 정모 불참, 오운완 0회
-                records.add(new Attendance(null, m.getStudentId(), semester, week, 0, false));
+            if (!hasRecord) {   // 근데 없는 사람은 정모 불참, 오운완 0회로 실제 기록을 만들고 벌금까지 확정
+                Attendance blank = new Attendance(null, m.getStudentId(), semester, week, 0, false);
+                attendanceRepository.save(blank);
+                calculateFine(m.getStudentId(), blank, week);
+                records.add(blank);
             }
         }
 
