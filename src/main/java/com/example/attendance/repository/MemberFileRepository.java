@@ -99,9 +99,10 @@ public class MemberFileRepository implements MemberRepository {
         for (int i = 0; i < store.size(); i++) {
             if (store.get(i).getStudentId().equals(member.getStudentId())) {
                 store.set(i, member);
+                saveToFile();
+                return;
             }
         }
-        saveToFile();
     }
 
     // 학번 -> 부원 정보 삭제(파일에 업데이트)

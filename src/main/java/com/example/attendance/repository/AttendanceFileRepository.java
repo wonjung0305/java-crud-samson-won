@@ -156,10 +156,10 @@ public class AttendanceFileRepository implements AttendanceRepository {
         for (int i = 0; i < store.size(); i++) {
             if (store.get(i).getId().equals(attendance.getId())) {
                 store.set(i, attendance);
+                saveToFile();
                 return;
             }
         }
-        saveToFile();
     }
 
     // 정보 삭제

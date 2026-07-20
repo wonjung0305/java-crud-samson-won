@@ -40,6 +40,7 @@ build/
 
 ## db.properties
 src/main/resources/db.properties
+.env
 
 ## 실행 시 생성되는 CSV 데이터 파일
 /members.csv
