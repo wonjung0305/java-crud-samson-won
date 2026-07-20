@@ -148,7 +148,7 @@ public class AttendanceService {
         }
 
         // 벌금 재계산
-        calculateFine(studentId, attendance, week);
+        calculateFine(studentId, attendance);
         return true;
     }
 
@@ -175,7 +175,7 @@ public class AttendanceService {
             attendanceRepository.save(attendance);   // 기록 생성, pk 증가
         }
 
-        calculateFine(studentId, attendance, week);   // 벌금 재계산
+        calculateFine(studentId, attendance);   // 벌금 재계산
         return true;
 
     }
@@ -291,7 +291,7 @@ public class AttendanceService {
         // 정모 불참: 2회 면제, 3회째 부터 5,000원 및 등비수열로 증가
         // 오운완 미달(주 3회 미만): 2주 면제, 3주째부터 5,000원 및 등비수열
 
-    private void calculateFine(String studentId, Attendance current, int currentWeek){
+    private void calculateFine(String studentId, Attendance current){
         // 기록 가져오기 (이번 학기 기록만)
         List<Attendance> history = attendanceRepository.findByStudentIdAndSemester(studentId, current.getSemester());
 
@@ -376,7 +376,7 @@ public class AttendanceService {
             if (!hasRecord) {   // 근데 없는 사람은 정모 불참, 오운완 0회로 실제 기록을 만들고 벌금까지 확정
                 Attendance blank = new Attendance(null, m.getStudentId(), semester, week, 0, false);
                 attendanceRepository.save(blank);
-                calculateFine(m.getStudentId(), blank, week);
+                calculateFine(m.getStudentId(), blank);
                 records.add(blank);
             }
         }
@@ -393,12 +393,7 @@ public class AttendanceService {
                     return Integer.compare(count2, count1);
                 }
 
-                // 학번 오름차순(고학번 우선)
-                if(!o1.getStudentId().equals(o2.getStudentId())){
-                    return o1.getStudentId().compareTo(o2.getStudentId());
-                }
-
-                // 이름 오름차순
+                // 학번 오름차순(고학번 우선) - 학번은 유일값이라 여기서 정렬이 항상 끝남
                 return o1.getStudentId().compareTo(o2.getStudentId());
             }
         });
